@@ -16,23 +16,23 @@ class Kontrol
 public:
 	Kontrol(int portn, ros::NodeHandle *nh);
 	~Kontrol();
-	void getMessage();
+	void getMessage(); // reads all of midi message queue
 private:
 	int slider_range; // 1 sets sliders to [-1,1] and 0 sets them to [0,1]
 
 	RtMidiIn *midiin = 0;
 	uint port;
-	KONTROL_TYPE type;
-	std::map<uint,float *> axis_map;
-	std::map<uint,int *> button_map;
-	sensor_msgs::Joy joy_msg;
-	ros::Publisher pub;
+	KONTROL_TYPE type; // KONTROL or KONTROL2 
+	std::map<uint,float *> axis_map; // maps axis id to pointer to message data
+	std::map<uint,int *> button_map; // maps button id to pointer to message data
+	sensor_msgs::Joy joy_msg; // ros message
+	ros::Publisher pub; 
 
-	void printPortInfo();	
-	int findKontrolPort();
-	void setType();
-	void bindMaps();
-	void updateMsg(uint b1,uint b2);
+	void printPortInfo();  // reads all ports and displays information	
+	int findKontrolPort(); // finds midi port which is connected to the nanokontrol
+	void setType(); // sets type according to verion of board
+	void bindMaps(); // sets up button and axis mapps
+	void updateMsg(uint b1,uint b2); // updates ros message from midi message
 };
 Kontrol::Kontrol(int portn, ros::NodeHandle *nh) {
 	midiin = new RtMidiIn(RtMidi::UNSPECIFIED,"RtMidi Input Client",1000);
@@ -49,7 +49,7 @@ Kontrol::Kontrol(int portn, ros::NodeHandle *nh) {
 	midiin->ignoreTypes( false, false, false );
 	bindMaps();
 	pub = nh->advertise<sensor_msgs::Joy>("nanokontrol",5,this);
-	ros::param::param<int>("slider_range", slider_range, 0);
+	ros::param::param<int>("slider_range", slider_range, 1);
 }
 void Kontrol::printPortInfo() {
 	unsigned int nPorts = midiin->getPortCount();
@@ -84,11 +84,13 @@ void Kontrol::setType(){
 		type = KONTROL;
 }
 void Kontrol::getMessage() {
+	// recives messages from midi queue
 	bool update = false;
 	std::vector<unsigned char> message;
 	do {
 		midiin->getMessage( &message );
 		uint nBytes = message.size();
+		// updates ros msg is midi message is of form "176 b1 b2"
 		if(nBytes == 3 && message[0] == 176) {
 			updateMsg(message[1],message[2]);		
 			update = true;
@@ -126,11 +128,14 @@ void Kontrol::bindMaps() {
 
 }
 void Kontrol::updateMsg(uint b1,uint b2) {
+	// if midi message is axis, update ros msg
 	auto it1 = axis_map.find(b1);
 	if(it1 != axis_map.end() && slider_range)
 		*(it1->second) = (float(b2)  - 63.5)/ 63.5;
 	if(it1 != axis_map.end() && !slider_range)
 		*(it1->second) = float(b2) / 127.0;
+
+	// if midi message is button, update ros msg
 	auto it2 = button_map.find(b1);
 	if(it2 != button_map.end())
 		*(it2->second) = b2 > 0;
