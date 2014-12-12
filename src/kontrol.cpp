@@ -49,7 +49,7 @@ Kontrol::Kontrol(int portn, ros::NodeHandle *nh) {
 	midiin->ignoreTypes( false, false, false );
 	bindMaps();
 	pub = nh->advertise<sensor_msgs::Joy>("nanokontrol",5,this);
-	ros::param::param<int>("slider_range", slider_range, 1);
+	ros::param::param<int>("~/slider_range", slider_range, 1);
 }
 void Kontrol::printPortInfo() {
 	unsigned int nPorts = midiin->getPortCount();
