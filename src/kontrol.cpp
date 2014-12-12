@@ -32,10 +32,10 @@ private:
 	int findKontrolPort();
 	void setType();
 	void bindMaps();
-	void publishMsg(uint b1,uint b2);
+	void updateMsg(uint b1,uint b2);
 };
 Kontrol::Kontrol(int portn, ros::NodeHandle *nh) {
-	midiin = new RtMidiIn();
+	midiin = new RtMidiIn(RtMidi::UNSPECIFIED,"RtMidi Input Client",1000);
 	printPortInfo();
 	if(portn < 0) {
 		port = findKontrolPort();
@@ -84,11 +84,19 @@ void Kontrol::setType(){
 		type = KONTROL;
 }
 void Kontrol::getMessage() {
+	bool update = false;
 	std::vector<unsigned char> message;
-	midiin->getMessage( &message );
-	uint nBytes = message.size();
-	if(nBytes == 3 && message[0] == 176)
-		publishMsg(message[1],message[2]);
+	do {
+		midiin->getMessage( &message );
+		uint nBytes = message.size();
+		if(nBytes == 3 && message[0] == 176) {
+			updateMsg(message[1],message[2]);		
+			update = true;
+		}
+	}while(message.size()>0);
+	
+	if(update)
+		pub.publish(joy_msg);
 }
 void Kontrol::bindMaps() {
 	std::vector<char> axis_numbers, button_numbers;
@@ -117,7 +125,7 @@ void Kontrol::bindMaps() {
 	}
 
 }
-void Kontrol::publishMsg(uint b1,uint b2) {
+void Kontrol::updateMsg(uint b1,uint b2) {
 	auto it1 = axis_map.find(b1);
 	if(it1 != axis_map.end() && slider_range)
 		*(it1->second) = (float(b2)  - 63.5)/ 63.5;
@@ -127,7 +135,6 @@ void Kontrol::publishMsg(uint b1,uint b2) {
 	if(it2 != button_map.end())
 		*(it2->second) = b2 > 0;
 
-	pub.publish(joy_msg);
 }
 
 int main(int argc, char *argv[])
@@ -135,11 +142,12 @@ int main(int argc, char *argv[])
 	try{
 		ros::init(argc,argv,"nanokontrol");
 		ros::NodeHandle nh("~");
+		ros::Rate  r(10);
 		Kontrol kontrol(-1, &nh);
 		while(nh.ok()){
 			ros::spinOnce();
 			kontrol.getMessage();
-
+			r.sleep();
 		}
 	}
 	catch ( RtMidiError &error ) {
