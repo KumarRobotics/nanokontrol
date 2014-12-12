@@ -1,0 +1,17 @@
+nanokontrol is a cpp ros driver of the korg nanokontrol/nanokontrol2 midi controller
+Author: Michael Watterson, 2014
+
+Dependencies:
+asound (System)
+RtMidi (Source Code Included)
+
+Setting up dependencies:
+Ubuntu 14:04
+Run:  sudo apt-get install libasound2-dev
+
+Usage:
+Plug in midi controller to a usb device and launch nanokontrol_node
+All the midi devices attached to the computer are check, and the first one that is a nanokontrol is chosen.
+
+Options:
+The sliders and knobs range in value from 0 to 1, to change this to -1 to 1, set the ros parameter "slider_range" to 1
