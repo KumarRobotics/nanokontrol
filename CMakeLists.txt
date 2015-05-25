@@ -6,11 +6,12 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11 -D__LINUX_ALSA__")
+# set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11 ")
 
 catkin_package(
  LIBRARIES rtmidi
  CATKIN_DEPENDS roscpp sensor_msgs
- DEPENDS asound2
+ # DEPENDS asound2
 )
 
 include_directories(rtmidi ${catkin_INCLUDE_DIRS})

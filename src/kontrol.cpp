@@ -97,8 +97,10 @@ void Kontrol::getMessage() {
 		}
 	}while(message.size()>0);
 	
-	if(update)
+	if(update) {
+		joy_msg.header.stamp = ros::Time::now();
 		pub.publish(joy_msg);
+	}
 }
 void Kontrol::bindMaps() {
 	std::vector<char> axis_numbers, button_numbers;
@@ -115,16 +117,13 @@ void Kontrol::bindMaps() {
 	joy_msg.axes 	= std::vector<float> (axis_numbers.size(),0);
 
 	// create maps to button data
-	uint counter = 0;
-	for(auto &id: axis_numbers) {
-		axis_map[id] = joy_msg.axes.data() + counter;
-		counter++;	
-	}
+	int counter = 0;
+	for(auto &id: axis_numbers)
+		axis_map[id] = joy_msg.axes.data() + counter++;
+	
 	counter = 0;
-	for(auto &id: button_numbers) {
-		button_map[id] = joy_msg.buttons.data() + counter;
-		counter++;	
-	}
+	for(auto &id: button_numbers)
+		button_map[id] = joy_msg.buttons.data() + counter++;
 
 }
 void Kontrol::updateMsg(uint b1,uint b2) {
