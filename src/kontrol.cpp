@@ -107,10 +107,12 @@ void Kontrol::bindMaps() {
 	if(type == KONTROL) {
 		axis_numbers = nanoKontrolAxisMapping;
 		button_numbers = nanoKontrolButtonMapping;
+		joy_msg.header.frame_id = "kontrol";
 	}
 	else {
 		axis_numbers = nanoKontrol2AxisMapping;
 		button_numbers = nanoKontrol2ButtonMapping;
+		joy_msg.header.frame_id = "kontrol2";
 	}
 	// make space
 	joy_msg.buttons = std::vector<int> (button_numbers.size(),0);
