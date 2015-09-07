@@ -1,0 +1,8 @@
+<launch>
+  <node pkg="nanokontrol"
+    type="nanokontrol_node"
+    name="nanokontrol"
+    output="screen">
+    <remap from="~nanokontrol" to="/nanokontrol2"/>
+  </node>
+</launch>
