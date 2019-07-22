@@ -6,10 +6,10 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 if(APPLE)
-  set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11 -D__MACOSX_CORE__")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -D__MACOSX_CORE__")
   set(RTMIDI_LINK_FLAGS "-framework CoreMIDI -framework CoreAudio -framework CoreFoundation")
 else() #assume linux
-  set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11 -D__LINUX_ALSA__")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -D__LINUX_ALSA__")
   set(RTMIDI_LINK_FLAGS "-lpthread -lasound")
 endif()
 
