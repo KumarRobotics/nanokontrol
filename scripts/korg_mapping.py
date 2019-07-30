@@ -9,6 +9,10 @@ from mav_manager.srv import Vec4
 class korg_mapper(object):
 
     def __init__(self):
+
+        self.goToZ_val = 1.0
+        self.flyVel_val = 0.5
+
         rospy.init_node('korg_mapper')
         self.sub = rospy.Subscriber("~nanokontrol", Joy, self.cb)
 
@@ -16,7 +20,7 @@ class korg_mapper(object):
         self.srv_motors = rospy.ServiceProxy('/'+self.robot+'/mav_services/motors', SetBool)
         self.srv_takeoff = rospy.ServiceProxy('/'+self.robot+'/mav_services/takeoff', Trigger)
         self.srv_land = rospy.ServiceProxy('/'+self.robot+'/mav_services/land', Trigger)
-        self.srv_gohome = rospy.ServiceProxy('/'+self.robot+'/mav_services/gohome', Trigger)
+        self.srv_gohome = rospy.ServiceProxy('/'+self.robot+'/mav_services/goHome', Trigger)
         self.srv_hover = rospy.ServiceProxy('/'+self.robot+'/mav_services/hover', Trigger)
         self.srv_estop = rospy.ServiceProxy('/'+self.robot+'/mav_services/estop', Trigger)
         self.srv_goToRelative = rospy.ServiceProxy('/'+self.robot+'/mav_services/goToRelative', Vec4)
@@ -76,11 +80,11 @@ class korg_mapper(object):
             return
         if button_vec[19] == 1:
             defined_play = True
-            self.goToRelZ(1.0)
+            self.goToRelZ(self.goToZ_val)
             return
         if button_vec[20] == 1:
             defined_forward = True
-            self.flyVelX(0.75)
+            self.flyVelX(self.flyVel_val)
             return
 
         if button_vec[16] == 1:
