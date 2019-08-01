@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+import numpy as np
 from sensor_msgs.msg import Joy
 from std_srvs.srv import SetBool
 from std_srvs.srv import Trigger
@@ -10,8 +11,11 @@ class korg_mapper(object):
 
     def __init__(self):
 
-        self.goToZ_val = 1.0
+        self.goToZ_val = 0.7
         self.flyVel_val = 0.5
+        self.fly_dir = "random"  # "x", "y", or "random" and define any vector below
+        # fly_dir_vec does not have to be a norm vector
+        self.fly_dir_vec = np.array([0,1,0])
 
         rospy.init_node('korg_mapper')
         self.sub = rospy.Subscriber("~nanokontrol", Joy, self.cb)
@@ -84,8 +88,15 @@ class korg_mapper(object):
             return
         if button_vec[20] == 1:
             defined_forward = True
-            self.flyVelX(self.flyVel_val)
-            return
+            if self.fly_dir == "x":
+                self.flyVelX(self.flyVel_val)
+                return
+            if self.fly_dir == "y":
+                self.flyVelY(self.flyVel_val)
+                return
+            if self.fly_dir == "random":
+                self.flyVelRandom(self.flyVel_val, self.fly_dir_vec)
+                return
 
         if button_vec[16] == 1:
             if self.enable_slider_9 is not True:
@@ -124,6 +135,22 @@ class korg_mapper(object):
         rospy.loginfo("go at velocity [%s, 0.0, 0.0, 0.0]", vx)
         try:
             self.srv_setDesVelInWorldFrame([vx, 0.0, 0.0, 0.0])
+        except rospy.ServiceException as exc:
+            rospy.logerr("Service did not process request: %s", str(exc))
+
+    def flyVelY(self, vy):
+        rospy.loginfo("go at velocity [0.0, %s, 0.0, 0.0]", vy)
+        try:
+            self.srv_setDesVelInWorldFrame([0.0, vy, 0.0, 0.0])
+        except rospy.ServiceException as exc:
+            rospy.logerr("Service did not process request: %s", str(exc))
+
+    def flyVelRandom(self, vy, vec):
+        dir_norm = np.linalg.norm(vec)
+        dir_vec = (vec/dir_norm)*vy
+        rospy.loginfo("go at velocity %s", dir_vec)
+        try:
+            self.srv_setDesVelInWorldFrame([dir_vec[0], dir_vec[1], dir_vec[2], 0.0])
         except rospy.ServiceException as exc:
             rospy.logerr("Service did not process request: %s", str(exc))
 
