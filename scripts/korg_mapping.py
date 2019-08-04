@@ -11,11 +11,11 @@ class korg_mapper(object):
 
     def __init__(self):
 
-        self.goToZ_val = 0.7
-        self.flyVel_val = 0.5
+        self.goToZ_val = 0.5
+        self.flyVel_val = 0.3
         self.fly_dir = "random"  # "x", "y", or "random" and define any vector below
         # fly_dir_vec does not have to be a norm vector
-        self.fly_dir_vec = np.array([0,1,0])
+        self.fly_dir_vec = np.array([1,-1,0])
 
         rospy.init_node('korg_mapper')
         self.sub = rospy.Subscriber("~nanokontrol", Joy, self.cb)
