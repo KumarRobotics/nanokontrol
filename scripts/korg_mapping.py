@@ -6,16 +6,17 @@ from sensor_msgs.msg import Joy
 from std_srvs.srv import SetBool
 from std_srvs.srv import Trigger
 from mav_manager.srv import Vec4
+from std_msgs.msg import Bool
 
 class korg_mapper(object):
 
     def __init__(self):
 
-        self.goToZ_val = 0.5
+        self.goToZ_val = 0.8
         self.flyVel_val = 0.3
         self.fly_dir = "random"  # "x", "y", or "random" and define any vector below
         # fly_dir_vec does not have to be a norm vector
-        self.fly_dir_vec = np.array([1,-1,0])
+        self.fly_dir_vec = np.array([1,0,0])
 
         rospy.init_node('korg_mapper')
         self.sub = rospy.Subscriber("~nanokontrol", Joy, self.cb)
@@ -30,6 +31,8 @@ class korg_mapper(object):
         self.srv_goToRelative = rospy.ServiceProxy('/'+self.robot+'/mav_services/goToRelative', Vec4)
         self.srv_setDesVelInWorldFrame = rospy.ServiceProxy('/'+self.robot+'/mav_services/setDesVelInWorldFrame', Vec4)
         self.srv_goTo = rospy.ServiceProxy('/'+self.robot+'/mav_services/goTo', Vec4)
+
+        self.pub_go = rospy.Publisher('/nanokontrol/go', Bool, queue_size=1)
 
         # enabling/disabling buttons - needs two clicks to enable
         self.enable_slider_9 = None    # first confirmation
@@ -47,6 +50,7 @@ class korg_mapper(object):
         estop = None
         defined_play = None
         defined_forward = None
+        defined_backward = None
 
         button_vec = data.buttons
         #rospy.loginfo("buttons vector obtained: %s", button_vec)
@@ -81,6 +85,12 @@ class korg_mapper(object):
         if button_vec[23] == 1:
             estop = True
             self.estop()
+            return
+        if button_vec[18] == 1:
+            defined_backward = True
+            go = Bool()
+            go.data = True
+            self.pub_go.publish(go)
             return
         if button_vec[19] == 1:
             defined_play = True
